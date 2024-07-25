@@ -1,0 +1,9 @@
+# Logging
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.subride.subrecommend.infra.in: DEBUG
+    com.subride.subrecommend.infra.out: DEBUG
+feign:
+  mysub:
+    url: ${MYSUB_URI}

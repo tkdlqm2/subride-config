@@ -3,3 +3,68 @@ server:
 spring:
   application:
     name: ${SPRING_APPLICATION_NAME}
+  datasource:
+    driver-class-name: ${DB_DRIVER}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    #password: ${DB_PASSWORD:{cipher}a68de9b0597cdb81a077bc626aa714f834e6798e9c0aa53c26d5cefb2c525d06}
+    #암호화한 값을 사용할 때는 위와 같은 형식은 사용 못함
+    # curl -X POST http://localhost:9001/encrypt -d "P@ssw0rd$"
+    password: '{cipher}dbf7229281926da83068aee04aca0fdbc170fa0bdc476e8e9241f1f4e827ba3c'
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+jwt:
+  #JWT secret키는 암호화하면 동작 안함
+  #secret: '{cipher}0c77292c64cf9ac384d29b89d92a69f9ca8c2ce96da81d36946515f6e85cd1dcd31b86547b56ec86cbba773af5f77da1657411cb6d7d133417228abbde727a197c14f17fda2059a9bc7c7fb671b2600614caf65b55618bb4b512854df55ca844e5f1d89dd392051e1cc0a1cd0ddf16d8'
+  secret: 8O2HQ13etL2BWZvYOiWsJ5uWFoLi6NBUG8divYVoCgtHVvlk3dqRksMl16toztDUeBTSIuOOPvHIrYq11G2BwQ==
+
+AllowedOrigins: ${FRONT_HOST}
+
+# Logging
+logging:
+  level:
+    root: INFO
+
+# Eureka client 설정
+# hostname은 서버를 구별하는 유일한 값이면 됨. instanceId는 Eureka에 등록된느 ID임 (라우팅할 때 주소 아님)
+# 라우팅 주소는 아래와 같이 결정됨
+# - preferIpAddress: false -> http://hostname:nonSecurePort, https://hostname:securePort
+# - preferIpAddress: true  -> http://ip:nonSecurePort, https://ip:securePort
+# 연결되는 주소는 https://{eureka ingress host}/eureka/apps/{service id}의 결과에서 homepageUrl값임
+# 생존신고를 하는 주기(lease-renewal-interval-in-seconds. 기본 30초)와
+# 만료 간주 시간(Eureka서버가 몇 초 동안 생존 신고를 못 받으면 만료로 간주할 지 판단하는 시간. 기본 90초)을 적절히 정의
+# preferIpAddress를 false로 하고 hostname에 k8s DNS주소를 설정하는 방식은 StatefulSet으로 배포하는 경우에만 동작함
+# (Deployment로 배포한 Pod는 고유 주소가 생기지 않기 때문임)
+eureka:
+  instance:
+    #hostname: ${HOSTNAME}.${APPLICATION_NAME}-headless.${NAMESPACE}.svc.cluster.local
+    hostname: ${HOSTNAME}
+    instanceId: ${HOSTNAME}:${SERVER_PORT}
+    preferIpAddress: true
+    nonSecurePort: ${SERVER_PORT}
+    securePort: 443
+    nonSecurePortEnabled: true
+    securePortEnabled: false
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 10
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVERS}
+
+# Actuator는 서버의 여러 정보를 제공해 주는 라이브러리
+# {ingress host}/actuator/health와 같이 결과값을 구할 수 있음
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, env, mappings, routes

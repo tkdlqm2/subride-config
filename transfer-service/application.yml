@@ -1,0 +1,19 @@
+spring:
+  sql:
+    init:
+      mode: always   #시작시 테이블 존재 체크하고 없으면 생성
+      schema-locations: classpath:schema.sql  #Table 생성 SLQ
+
+mybatis:
+  type-aliases-package: com.subride.transfer.persistent.entity
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  type-handlers-package: com.subride.transfer.persistent.typehandler
+
+# Logging
+logging:
+  level:
+    org.springframework.security: DEBUG
+    com.subride.transfer: DEBUG
+feign:
+  mygroup:
+    url: ${MYGRP_URI}
